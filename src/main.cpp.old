@@ -1,0 +1,121 @@
+#include "ncurses.h"
+#include <algorithm>
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+const int SCREEN_X = 0x10;
+const int SCREEN_Y = 0x10;
+
+enum SCREEN_CHARACTER_INDEXES { EMPTY = 0, BLOCK, PLAYER };
+const char *SCREEN_CHARACTER[] = {"  ", "##", ":3"};
+
+void setCursorPosition(int x, int y);
+
+int main() {
+  initscr();
+  cbreak();
+  noecho();
+  nodelay(stdscr, TRUE);
+  keypad(stdscr, TRUE);
+
+  int playerX = SCREEN_X / 2, playerY = SCREEN_Y / 2;
+  int prevPlayerX = playerX, prevPlayerY = playerY;
+
+  SCREEN_CHARACTER_INDEXES SCREEN[SCREEN_Y][SCREEN_X];
+  SCREEN_CHARACTER_INDEXES SCREEN_CHANGE[SCREEN_Y][SCREEN_X];
+  for (int y = 0; y < SCREEN_Y; ++y) {
+    for (int x = 0; x < SCREEN_X; ++x) {
+      SCREEN[y][x] = SCREEN_CHARACTER_INDEXES::EMPTY;
+      SCREEN_CHANGE[y][x] = SCREEN_CHARACTER_INDEXES::EMPTY;
+    }
+  }
+
+  SCREEN_CHANGE[playerY][playerX] = SCREEN_CHARACTER_INDEXES::PLAYER;
+
+  char MOVEMENTS[4] = {'w', 'a', 's', 'd'};
+  int MOVEMENTS_SIZE = sizeof(MOVEMENTS) / sizeof(MOVEMENTS[0]);
+
+  std::vector<int> pressedKeys;
+
+  curs_set(0);
+  int c;
+  bool running = true;
+  while (running) {
+    c = getch();
+    if (c != ERR) {
+      // Check if the key is already pressed
+      bool already_pressed = false;
+      for (int key : pressedKeys) {
+        if (key == c) {
+          already_pressed = true;
+          break;
+        }
+      }
+      if (!already_pressed) {
+        pressedKeys.push_back(c);
+      }
+    }
+
+    for (int key : pressedKeys) {
+      if (key == 'q') {
+        running = false;
+        break;
+      }
+      if (key == 'w') {
+        playerY -= 1;
+      }
+      if (key == 's') {
+        playerY += 1;
+      }
+      if (key == 'a') {
+        playerX -= 1;
+      }
+      if (key == 'd') {
+        playerX += 1;
+      }
+    }
+
+    playerX =
+        (playerX < 0) ? 0 : (playerX > SCREEN_X - 1 ? SCREEN_X - 1 : playerX);
+    playerY =
+        (playerY < 0) ? 0 : (playerY > SCREEN_Y - 1 ? SCREEN_Y - 1 : playerY);
+    // cout << playerX << playerY;
+
+    if (prevPlayerX != playerX || prevPlayerY != playerY) {
+      SCREEN_CHANGE[prevPlayerY][prevPlayerX] = SCREEN_CHARACTER_INDEXES::EMPTY;
+
+      SCREEN_CHANGE[playerY][playerX] = SCREEN_CHARACTER_INDEXES::PLAYER;
+      prevPlayerX = playerX;
+      prevPlayerY = playerY;
+    }
+
+    for (int y = 0; y < SCREEN_Y; ++y) {
+      for (int x = 0; x < SCREEN_X; ++x) {
+        if (SCREEN[y][x] != SCREEN_CHANGE[y][x]) {
+          mvprintw(y, x * 2, "%s", SCREEN_CHARACTER[SCREEN_CHANGE[y][x]]);
+        }
+      }
+    }
+    for (int y = 0; y < SCREEN_Y; ++y) {
+      for (int x = 0; x < SCREEN_X; ++x) {
+        if (SCREEN[y][x] != SCREEN_CHANGE[y][x]) {
+          SCREEN[y][x] = SCREEN_CHANGE[y][x];
+        }
+      }
+    }
+
+    refresh();
+  }
+
+  endwin();
+  curs_set(1);
+  return 0;
+}
+
+void setCursorPosition(int x, int y) {
+  std::cout << "\033[" << y + 1 << ";" << x + 1 << "H";
+}
