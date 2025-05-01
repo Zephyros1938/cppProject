@@ -1,46 +1,50 @@
+#include "window.h"
+#include <cctype>
 #include <cstdlib>
 #include <cstring>
-#include <fmt/base.h>
+#include <fmt/core.h>
 #include <fmt/format.h>
-#include <iomanip>
-#include <iostream>
+#include <format>
 #include <ncurses.h>
 #include <string>
 
 using namespace std;
 
 int main() {
+#ifdef _WIN32
+  cout << "Windows platforms are not supported." << endl;
+  return -1;
+#endif
   initscr();
   cbreak();
   noecho();
-  nodelay(stdscr, TRUE);
+  scrollok(stdscr, TRUE);
+  // nodelay(stdscr, TRUE);
   keypad(stdscr, TRUE);
 
-  int height = 10, width = 30, start_y = (LINES - height) / 2,
-      start_x = (COLS - width) / 2;
-  WINDOW *win = newwin(height, width, start_y, start_x);
+  Window win = Window(1.0f, 0.1f, 0.5f, 0.05);
+
   refresh();
-  box(win, 0, 0);
+  win.box();
 
   int ch;
   bool running = true;
 
   while (running) {
     ch = getch();
-    // if (ch == 27) {
-    //   running = false;
-    //   break;
-    // }
+    if (ch == 27) {
+      running = false;
+      break;
+    }
 
-    box(win, 0, 0);
-    mvwprintw(win, 1, 1, "Test");
-    mvwprintw(win, 3, 1, "Press Any Key To Exit");
-    mvwprintw(win, 7, 1, "Key: [%4C]", ch);
-    wrefresh(win);
-
+    win.box();
+    win.print(1, 1, "Test");
+    win.print(2, 1, "Press ESC To Exit");
+    win.print(3, 1, format("Key: [{:4c}]", isprint(ch) ? ch : '?').c_str());
+    win.refresh();
   }
 
-  delwin(win);
+  win.kill();
   endwin();
 
   return 0;
