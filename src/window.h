@@ -44,4 +44,8 @@ public:
     Prints text to the window at position (x,y)
   */
   void print(int y, int x, const char *text);
+  /*
+    Prints text to the window at position (x,y)
+  */
+  void print(int y, int x, std::string text);
 };

@@ -22,10 +22,11 @@ int main() {
   // nodelay(stdscr, TRUE);
   keypad(stdscr, TRUE);
 
-  Window win = Window(1.0f, 0.1f, 0.5f, 0.05);
+  Window win = Window(1.0f, 0.1f, 0.0f, 0.00);
+  Window win2 = Window(1.0f, 0.1f, 0.0f, 0.0);
+  Window keyWin = Window(0.2f, 0.2f, 0.0f, 0.0);
 
   refresh();
-  win.box();
 
   int ch;
   bool running = true;
@@ -38,13 +39,18 @@ int main() {
     }
 
     win.box();
+    win2.box();
     win.print(1, 1, "Test");
-    win.print(2, 1, "Press ESC To Exit");
-    win.print(3, 1, format("Key: [{:4c}]", isprint(ch) ? ch : '?').c_str());
+    keyWin.print(2, 1, format("Key: [{:4c}]", isprint(ch) ? ch : '?'));
+    win2.print(1, 1, "Press ESC To Exit");
     win.refresh();
+    win2.refresh();
+    keyWin.refresh();
   }
 
   win.kill();
+  win2.kill();
+  keyWin.kill();
   endwin();
 
   return 0;
