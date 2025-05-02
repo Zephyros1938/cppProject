@@ -1,0 +1,5 @@
+# Relative path to project headers
+include/window.h
+
+# System libraries (by name, to be linked using find_library or pkg-config)
+@ncurses
