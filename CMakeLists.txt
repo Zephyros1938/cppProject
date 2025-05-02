@@ -1,28 +1,50 @@
 cmake_minimum_required(VERSION 3.10)
-project(MyProject)
 
-# Use modern C++ standard
-set(CMAKE_CXX_STANDARD 20)
+project(Program VERSION 1.0)
+
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-# Source directory
-set(SRC_DIR "${CMAKE_SOURCE_DIR}/src")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build)
 
-# Source files
-set(SOURCES
-    ${SRC_DIR}/main.cpp
-    ${SRC_DIR}/window.cpp
-)
+# Store found system libraries here
+set(SYSTEM_LIBS)
 
-# Find required packages
-find_package(Curses REQUIRED)
-find_package(fmt REQUIRED)
+# Read dependencies.txt
+file(READ "${CMAKE_SOURCE_DIR}/dependencies.txt" DEP_CONTENTS)
+string(REPLACE "\n" ";" DEP_LIST "${DEP_CONTENTS}")
 
-# Create executable
-add_executable(Project ${SOURCES})
+foreach(DEP IN LISTS DEP_LIST)
+    string(STRIP "${DEP}" DEP)  # Trim whitespace
+    if(DEP STREQUAL "" OR DEP MATCHES "^#")  # Skip empty lines or comments
+        continue()
+    elseif(DEP MATCHES "^@")
+        # Handle system library
+        string(SUBSTRING "${DEP}" 1 -1 LIB_NAME)
+        find_path(LIB_INCLUDE_DIR "${LIB_NAME}.h")
+        find_library(LIB_BINARY "${LIB_NAME}")
+        if(LIB_INCLUDE_DIR)
+            include_directories(${LIB_INCLUDE_DIR})
+        else()
+            message(WARNING "Could not find headers for system library '${LIB_NAME}'")
+        endif()
+        if(LIB_BINARY)
+            list(APPEND SYSTEM_LIBS ${LIB_BINARY})
+        else()
+            message(WARNING "Could not find binary for system library '${LIB_NAME}'")
+        endif()
+    else()
+        # Handle local include path
+        if(EXISTS "${CMAKE_SOURCE_DIR}/${DEP}")
+            include_directories("${CMAKE_SOURCE_DIR}/${DEP}")
+        else()
+            message(WARNING "Dependency path '${DEP}' does not exist.")
+        endif()
+    endif()
+endforeach()
 
-# Include directories for ncurses and fmt
-target_include_directories(Project PRIVATE ${CURSES_INCLUDE_DIR})
+# Add executable
+add_executable(Program src/main.cpp)
 
 # Link libraries
-target_link_libraries(Project PRIVATE ${CURSES_LIBRARIES} fmt::fmt)
+target_link_libraries(Program ${SYSTEM_LIBS})
