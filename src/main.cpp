@@ -1,4 +1,4 @@
-#include "window.h"
+#include "../include/window.h"
 #include <cctype>
 #include <cstdlib>
 #include <cstring>
