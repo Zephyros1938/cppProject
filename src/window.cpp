@@ -1,16 +1,28 @@
 #include "../include/window.h"
 #include <cstdarg>
+#include <format>
+#include <iostream>
 #include <ncurses.h>
 
-Window::Window(float xw, float yw, float x, float y) {
-  win = newwin(LINES * yw, COLS * xw, LINES * y, COLS * x);
+Window::Window(float px, float py, float xw, float yw) {
+  int ywi = (LINES * yw) < 3 ? 3 : (LINES * yw);
+  int xwi = (COLS * xw) < 3 ? 3 : (COLS * xw);
+  int pyi = py < 0.0f ? LINES * (1.0f - py) : LINES * py;
+  int pxi = px < 0.0f ? COLS * (1.0f - px) : COLS * px;
+  xpos = pxi;
+  ypos = pyi;
+  width = xwi;
+  height = ywi;
+  win = ::newwin(ywi, xwi, pyi, pxi);
 }
 
-Window::Window(int xw, int yw, float x, float y) {
-  win = newwin(LINES * yw, COLS * xw, LINES * y, COLS * x);
+Window::Window(int px, int py, float xw, float yw) {
+  win = ::newwin((LINES * yw), (COLS * xw), py, px);
 }
 
-Window::Window(int xw, int yw, int x, int y) { win = newwin(yw, xw, y, x); }
+Window::Window(int px, int py, int xw, int yw) {
+  win = ::newwin(yw, xw, py, px);
+}
 
 WINDOW *Window::get() { return win; }
 

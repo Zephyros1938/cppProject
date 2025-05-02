@@ -22,9 +22,9 @@ int main() {
   // nodelay(stdscr, TRUE);
   keypad(stdscr, TRUE);
 
-  Window win = Window(1.0f, 0.1f, 0.0f, 0.00);
-  Window win2 = Window(1.0f, 0.1f, 0.0f, 0.0);
-  Window keyWin = Window(0.2f, 0.2f, 0.0f, 0.0);
+  Window win = Window(0.0f, 0.0f, 1.0f, 0.2f);
+  Window exitWin = Window(0.0f, -0.33f, 0.2f, 0.2f);
+  Window keyWin = Window(0.5f, -0.33f, 0.2f, 0.2f);
 
   refresh();
 
@@ -39,17 +39,34 @@ int main() {
     }
 
     win.box();
-    win2.box();
-    win.print(1, 1, "Test");
-    keyWin.print(2, 1, format("Key: [{:4c}]", isprint(ch) ? ch : '?'));
-    win2.print(1, 1, "Press ESC To Exit");
+    exitWin.box();
+    keyWin.box();
+    win.print(1, 1, "ZCurses Window");
+    win.print(2, 1, format("Terminal Size: [{:4d}x{:4d}]", LINES, COLS));
+    Dimensions winDimensions = win.getDimensions();
+    Dimensions exitWinDimensions = exitWin.getDimensions();
+    Dimensions keyWinDimensions = keyWin.getDimensions();
+    win.print(3, 1,
+              format("win dimensions: [{:4d}x{:4d} {:4d}x{:4d}]",
+                     winDimensions.xpos, winDimensions.ypos,
+                     winDimensions.width, winDimensions.height));
+    win.print(4, 1,
+              format("exitWin dimensions: [{:4d}x{:4d} {:4d}x{:4d}]",
+                     exitWinDimensions.xpos, exitWinDimensions.ypos,
+                     exitWinDimensions.width, exitWinDimensions.height));
+    win.print(5, 1,
+              format("keyWin dimensions: [{:4d}x{:4d} {:4d}x{:4d}]",
+                     keyWinDimensions.xpos, keyWinDimensions.ypos,
+                     keyWinDimensions.width, keyWinDimensions.height));
+    keyWin.print(1, 1, format("Key: [{:4c}]", isprint(ch) ? ch : '?'));
+    exitWin.print(1, 1, "Press ESC To Exit");
     win.refresh();
-    win2.refresh();
+    exitWin.refresh();
     keyWin.refresh();
   }
 
   win.kill();
-  win2.kill();
+  exitWin.kill();
   keyWin.kill();
   endwin();
 
